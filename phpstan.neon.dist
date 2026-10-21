@@ -1,0 +1,20 @@
+parameters:
+	level: 6
+	# PHP 7.4 の文法で解析する / Analyse with PHP 7.4 syntax rules.
+	phpVersion: 70400
+	paths:
+		- offset-pagination-for-wpgraphql.php
+		- src/
+	scanFiles:
+		- vendor/axepress/wp-graphql-stubs/wp-graphql-stubs.php
+	ignoreErrors:
+		# WPGraphQL が register_post_type の引数から足す動的プロパティ
+		# Dynamic property that WPGraphQL adds from the register_post_type args.
+		-
+			message: '#^Access to an undefined property WP_Post_Type::\$graphql_single_name\.$#'
+			path: src/Loader.php
+		# WP_User_Query::__get() 経由で読める private プロパティ
+		# Private property readable through WP_User_Query::__get().
+		-
+			message: '#^Access to an undefined property WP_User_Query::\$total_users\.$#'
+			path: src/Loader.php

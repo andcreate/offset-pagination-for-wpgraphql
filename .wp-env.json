@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"phpVersion": "8.2",
+	"testsEnvironment": false,
+	"plugins": [
+		"https://downloads.wordpress.org/plugin/wp-graphql.2.25.0.zip",
+		"."
+	],
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false,
+		"GRAPHQL_DEBUG": true
+	},
+	"mappings": {
+		"wp-content/mu-plugins": "./tests/wp-env/mu-plugins"
+	}
+}
