@@ -1,0 +1,105 @@
+name: CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    WP_ENV: npx -y @wordpress/env@12.0.0
+
+jobs:
+    lint:
+        name: PHPStan / PHPCS
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  coverage: none
+                  tools: composer:v2
+
+            - name: Install dependencies
+              run: composer install --no-interaction --no-progress
+
+            - name: PHPStan
+              run: composer phpstan -- --no-progress
+
+            - name: PHPCS
+              run: composer phpcs
+
+    test:
+        name: WPGraphQL ${{ matrix.wpgraphql }} / PHP ${{ matrix.php }} / WP ${{ matrix.wp }}
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # WPGraphQL の版はここに足す / Add WPGraphQL versions here.
+                wpgraphql: ['2.0.0', '2.25.0']
+                php: ['7.4', '8.3']
+                wp: ['latest']
+                include:
+                    # Requires at least の下限 / Lower bound of "Requires at least".
+                    - wpgraphql: '2.0.0'
+                      php: '7.4'
+                      wp: '6.5'
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+
+            - name: Write wp-env override for this matrix cell
+              env:
+                  WPGRAPHQL: ${{ matrix.wpgraphql }}
+                  PHP: ${{ matrix.php }}
+                  WP: ${{ matrix.wp }}
+              run: |
+                  # plugins は上書き扱いなので 3 つとも書く / The override replaces "plugins", so list all three.
+                  jq -n \
+                    --arg php "$PHP" \
+                    --arg wpgraphql "https://downloads.wordpress.org/plugin/wp-graphql.${WPGRAPHQL}.zip" \
+                    --arg core "$( [ "$WP" = latest ] && echo '' || echo "https://wordpress.org/wordpress-${WP}.zip" )" \
+                    '{phpVersion: $php, plugins: [$wpgraphql, ".", "valu-digital/wp-graphql-offset-pagination#db85d9b676377f4ddda96859f56e14c1e32dd0ce"]}
+                     + (if $core == "" then {} else {core: $core} end)' \
+                    > .wp-env.test.override.json
+                  cat .wp-env.test.override.json
+
+            - name: Start wp-env
+              run: $WP_ENV start --config=.wp-env.test.json
+
+            - name: Show versions
+              run: |
+                  $WP_ENV run cli --config=.wp-env.test.json wp core version
+                  $WP_ENV run cli --config=.wp-env.test.json php -- --version
+                  $WP_ENV run cli --config=.wp-env.test.json wp plugin list
+
+            - name: Install dependencies in the container
+              run: $WP_ENV run cli --config=.wp-env.test.json --env-cwd=wp-content/plugins/offset-pagination-for-wpgraphql composer install --no-interaction --no-progress
+
+            - name: PHPUnit
+              # サイトのテーブルを消さないよう、テスト用の接頭辞で動かす
+              # Use a separate table prefix so the test install does not drop the site tables.
+              run: $WP_ENV run cli --config=.wp-env.test.json --env-cwd=wp-content/plugins/offset-pagination-for-wpgraphql env WORDPRESS_TABLE_PREFIX=wptests_ vendor/bin/phpunit
+
+            - name: Coexistence with the original plugin
+              run: bash tests/coexistence/run.sh .wp-env.test.json
+
+            - name: No PHP notices from this plugin
+              run: |
+                  $WP_ENV run cli --config=.wp-env.test.json sh -c 'cat wp-content/debug.log 2>/dev/null || true' > debug.log
+                  cat debug.log
+                  if grep -E "PHP (Fatal|Warning|Notice|Deprecated).*offset-pagination-for-wpgraphql/(src|offset-pagination-for-wpgraphql\.php)" debug.log; then
+                    echo "::error::PHP notices from this plugin"
+                    exit 1
+                  fi
