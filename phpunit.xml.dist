@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/phpunit/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	convertErrorsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertWarningsToExceptions="true"
+	convertDeprecationsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="offset-pagination">
+			<directory suffix="Test.php">./tests/phpunit/tests/</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

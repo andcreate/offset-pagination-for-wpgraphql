@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"phpVersion": "8.3",
+	"port": 8890,
+	"testsEnvironment": false,
+	"plugins": [
+		"https://downloads.wordpress.org/plugin/wp-graphql.2.25.0.zip",
+		".",
+		"valu-digital/wp-graphql-offset-pagination#db85d9b676377f4ddda96859f56e14c1e32dd0ce"
+	],
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_LOG": true,
+		"WP_DEBUG_DISPLAY": false,
+		"GRAPHQL_DEBUG": true
+	}
+}
