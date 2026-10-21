@@ -12,18 +12,18 @@
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.WP.GlobalVariablesOverride.Prohibited
 
-$op_expect = $args[0] ?? '';
-$op_errors = array();
+$opfw_expect = $args[0] ?? '';
+$opfw_errors = array();
 
 // 本プラグインのフックが graphql_register_types に載っているか
 // Whether this plugin's callback is attached to graphql_register_types.
-$op_fork_hooked = false;
+$opfw_fork_hooked = false;
 global $wp_filter;
 if ( isset( $wp_filter['graphql_register_types'] ) ) {
-	foreach ( $wp_filter['graphql_register_types']->callbacks as $op_callbacks ) {
-		foreach ( $op_callbacks as $op_cb ) {
-			if ( is_array( $op_cb['function'] ) && $op_cb['function'][0] instanceof \AndCreate\OffsetPaginationForWPGraphQL\Loader ) {
-				$op_fork_hooked = true;
+	foreach ( $wp_filter['graphql_register_types']->callbacks as $opfw_callbacks ) {
+		foreach ( $opfw_callbacks as $opfw_cb ) {
+			if ( is_array( $opfw_cb['function'] ) && $opfw_cb['function'][0] instanceof \AndCreate\OffsetPaginationForWPGraphQL\Loader ) {
+				$opfw_fork_hooked = true;
 			}
 		}
 	}
@@ -32,33 +32,33 @@ if ( isset( $wp_filter['graphql_register_types'] ) ) {
 // 管理画面の通知 / Admin notice.
 wp_set_current_user( 1 );
 ob_start();
-do_action( 'admin_notices' );
-$op_notice = false !== strpos( (string) ob_get_clean(), 'Offset Pagination for WPGraphQL is inactive' );
+do_action( 'admin_notices' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
+$opfw_notice = false !== strpos( (string) ob_get_clean(), 'Offset Pagination for WPGraphQL is inactive' );
 
 // GraphQL が型の二重登録なしで動くか / GraphQL works without duplicate type registration.
-$op_res      = graphql( array( 'query' => '{ posts(where: { offsetPagination: { offset: 0, size: 1 } }) { nodes { databaseId } pageInfo { offsetPagination { total hasMore hasPrevious } } } }' ) );
-$op_messages = wp_list_pluck( $op_res['extensions']['debug'] ?? array(), 'message' );
-$op_dupes    = array_values(
+$opfw_res      = graphql( array( 'query' => '{ posts(where: { offsetPagination: { offset: 0, size: 1 } }) { nodes { databaseId } pageInfo { offsetPagination { total hasMore hasPrevious } } } }' ) );
+$opfw_messages = wp_list_pluck( $opfw_res['extensions']['debug'] ?? array(), 'message' );
+$opfw_dupes    = array_values(
 	array_filter(
-		$op_messages,
+		$opfw_messages,
 		static function ( $m ) {
 			return false !== stripos( (string) $m, 'duplicate' ) || false !== stripos( (string) $m, 'already' );
 		}
 	)
 );
 
-$op_state = array(
-	'expect'         => $op_expect,
+$opfw_state = array(
+	'expect'         => $opfw_expect,
 	'upstream_const' => defined( 'WP_GRAPHQL_OFFSET_PAGINATION' ),
 	'fork_loaded'    => defined( 'OFFSET_PAGINATION_FOR_WPGRAPHQL_VERSION' ),
-	'fork_hooked'    => $op_fork_hooked,
-	'notice'         => $op_notice,
-	'graphql_errors' => $op_res['errors'] ?? null,
-	'total_is_int'   => is_int( $op_res['data']['posts']['pageInfo']['offsetPagination']['total'] ?? null ),
-	'duplicate_msgs' => $op_dupes,
+	'fork_hooked'    => $opfw_fork_hooked,
+	'notice'         => $opfw_notice,
+	'graphql_errors' => $opfw_res['errors'] ?? null,
+	'total_is_int'   => is_int( $opfw_res['data']['posts']['pageInfo']['offsetPagination']['total'] ?? null ),
+	'duplicate_msgs' => $opfw_dupes,
 );
 
-$op_want = array(
+$opfw_want = array(
 	'fork-only' => array(
 		'upstream_const' => false,
 		'fork_loaded'    => true,
@@ -73,28 +73,28 @@ $op_want = array(
 	),
 );
 
-if ( ! isset( $op_want[ $op_expect ] ) ) {
-	$op_errors[] = "unknown expect: {$op_expect}";
+if ( ! isset( $opfw_want[ $opfw_expect ] ) ) {
+	$opfw_errors[] = "unknown expect: {$opfw_expect}";
 } else {
-	foreach ( $op_want[ $op_expect ] as $op_key => $op_value ) {
-		if ( $op_state[ $op_key ] !== $op_value ) {
-			$op_errors[] = "{$op_key} should be " . var_export( $op_value, true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+	foreach ( $opfw_want[ $opfw_expect ] as $opfw_key => $opfw_value ) {
+		if ( $opfw_state[ $opfw_key ] !== $opfw_value ) {
+			$opfw_errors[] = "{$opfw_key} should be " . var_export( $opfw_value, true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		}
 	}
 }
-if ( null !== $op_state['graphql_errors'] ) {
-	$op_errors[] = 'graphql returned errors';
+if ( null !== $opfw_state['graphql_errors'] ) {
+	$opfw_errors[] = 'graphql returned errors';
 }
-if ( ! $op_state['total_is_int'] ) {
-	$op_errors[] = 'total is not an int';
+if ( ! $opfw_state['total_is_int'] ) {
+	$opfw_errors[] = 'total is not an int';
 }
-if ( array() !== $op_dupes ) {
-	$op_errors[] = 'duplicate registration messages found';
+if ( array() !== $opfw_dupes ) {
+	$opfw_errors[] = 'duplicate registration messages found';
 }
 
-echo wp_json_encode( $op_state ) . PHP_EOL;
-if ( array() !== $op_errors ) {
-	echo 'FAIL: ' . implode( '; ', $op_errors ) . PHP_EOL;
+echo wp_json_encode( $opfw_state ) . PHP_EOL;
+if ( array() !== $opfw_errors ) {
+	echo 'FAIL: ' . implode( '; ', $opfw_errors ) . PHP_EOL;
 	exit( 1 );
 }
 echo 'PASS' . PHP_EOL;

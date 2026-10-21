@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<ruleset name="Offset Pagination for WPGraphQL">
+	<description>Coding standards for the plugin code.</description>
+
+	<file>offset-pagination-for-wpgraphql.php</file>
+	<file>src/</file>
+	<file>tests/phpunit/bootstrap.php</file>
+	<file>tests/phpunit/includes/</file>
+	<file>tests/coexistence/check.php</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="cache" value=".phpcs-cache"/>
+	<arg value="sp"/>
+
+	<config name="minimum_wp_version" value="6.5"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress">
+		<!-- PSR-4 風のクラスファイル名を使う / Class files use PSR-4 style names. -->
+		<exclude name="WordPress.Files.FileName"/>
+		<!-- GraphQL の名前に合わせた camelCase の配列キーとテストヘルパーを許す / Allow camelCase GraphQL keys and test helpers. -->
+		<exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
+	</rule>
+
+	<!-- 日本語の説明文は大文字で始められない / Japanese descriptions cannot start with a capital letter. -->
+	<rule ref="Generic.Commenting.DocComment">
+		<exclude name="Generic.Commenting.DocComment.ShortNotCapital"/>
+		<exclude name="Generic.Commenting.DocComment.LongNotCapital"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="offset-pagination-for-wpgraphql"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="AndCreate\OffsetPaginationForWPGraphQL"/>
+				<element value="offset_pagination_for_wpgraphql"/>
+				<element value="opfw"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>

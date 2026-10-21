@@ -8,20 +8,20 @@
  * @package AndCreate\OffsetPaginationForWPGraphQL
  */
 
-$op_tests_dir = getenv( 'WP_TESTS_DIR' );
-if ( ! $op_tests_dir ) {
-	$op_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+$opfw_tests_dir = getenv( 'WP_TESTS_DIR' );
+if ( ! $opfw_tests_dir ) {
+	$opfw_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
 }
 
-if ( ! file_exists( $op_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find {$op_tests_dir}/includes/functions.php" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+if ( ! file_exists( $opfw_tests_dir . '/includes/functions.php' ) ) {
+	echo "Could not find {$opfw_tests_dir}/includes/functions.php" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	exit( 1 );
 }
 
 // Polyfills と wp-graphql-testcase を読み込む / Load the polyfills and wp-graphql-testcase.
 require_once dirname( __DIR__, 2 ) . '/vendor/autoload.php';
 
-require_once $op_tests_dir . '/includes/functions.php';
+require_once $opfw_tests_dir . '/includes/functions.php';
 
 tests_add_filter(
 	'muplugins_loaded',
@@ -33,4 +33,4 @@ tests_add_filter(
 	}
 );
 
-require $op_tests_dir . '/includes/bootstrap.php';
+require $opfw_tests_dir . '/includes/bootstrap.php';

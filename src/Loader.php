@@ -114,7 +114,7 @@ class Loader {
 			'graphql_connection_query_args',
 			array( $this, 'op_filter_graphql_connection_query_args' ),
 			10,
-			5
+			2
 		);
 
 		add_filter(
@@ -131,6 +131,7 @@ class Loader {
 	 *
 	 * @param int                        $amount   Requested amount.
 	 * @param AbstractConnectionResolver $resolver Connection resolver.
+	 * @phpstan-param AbstractConnectionResolver<mixed> $resolver
 	 * @return int
 	 */
 	public function op_filter_graphql_connection_amount_requested( $amount, $resolver ) {
@@ -146,6 +147,7 @@ class Loader {
 	 * Returns where.offsetPagination.size (0 when missing).
 	 *
 	 * @param AbstractConnectionResolver $resolver Connection resolver.
+	 * @phpstan-param AbstractConnectionResolver<mixed> $resolver
 	 * @return int
 	 */
 	public static function get_page_size( AbstractConnectionResolver $resolver ) {
@@ -158,6 +160,7 @@ class Loader {
 	 * Whether the connection is resolving offset pagination.
 	 *
 	 * @param AbstractConnectionResolver $resolver Connection resolver.
+	 * @phpstan-param AbstractConnectionResolver<mixed> $resolver
 	 * @return bool
 	 */
 	public static function is_offset_resolver( AbstractConnectionResolver $resolver ) {
@@ -171,6 +174,7 @@ class Loader {
 	 *
 	 * @param array<string,mixed>        $query_args Query args.
 	 * @param AbstractConnectionResolver $resolver   Connection resolver.
+	 * @phpstan-param AbstractConnectionResolver<mixed> $resolver
 	 * @return array<string,mixed>
 	 */
 	public function op_filter_graphql_connection_query_args(
@@ -222,6 +226,7 @@ class Loader {
 	 *
 	 * @param array<string,mixed>        $page_info Page info.
 	 * @param AbstractConnectionResolver $resolver  Connection resolver.
+	 * @phpstan-param AbstractConnectionResolver<mixed> $resolver
 	 * @return array<string,mixed>
 	 */
 	public function op_filter_graphql_connection_page_info(
