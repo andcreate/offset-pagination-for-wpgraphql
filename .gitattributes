@@ -1,0 +1,15 @@
+# Keep the release archive (git archive) to the files WordPress needs.
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+/.vscode export-ignore
+/.wp-env.json export-ignore
+/.wp-env.test.json export-ignore
+/archive export-ignore
+/composer.json export-ignore
+/composer.lock export-ignore
+/docs export-ignore
+/phpcs.xml.dist export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore
